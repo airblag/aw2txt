@@ -1,0 +1,73 @@
+#!/bin/bash
+
+# This shell script extracts simple paragraphs from an applix Words document
+# (.aw) and displays it as a text on stdout.
+
+# File format:
+# to simplify the matching, we unsplit the long lines
+# we are only interessed in text within paragraphs <P
+# It extracts text from tags <T "blabla"
+# try to translate the encoded extended ASCII
+# ^pm = ü
+# ^oe = ä 
+# ^pg = ö
+# ^nm = Ü
+# ^me = Ä
+# ^ng = Ö
+# ^np = ß
+# ^aj = \t
+# ^oj = é
+# ^oi = è 
+# ^ok = ê
+# ^oh = ç
+#<T "--Feld--"> = /dev/null
+# \" = "
+
+if [ $# -ne 1 ]; then
+	echo "Usage : $0 [file.aw]"
+	echo -e "\t try to convert the Applix Words file to text on stdout"
+	exit 
+fi
+
+if [ -f $1 ];then
+
+	tmpf=$(mktemp /tmp/aw2txt.XXXXXX)	
+
+#	echo $tmpf
+
+	# we ignore headers & so on
+	awk '/^<start_flow>$/,/^<end_flow>$/' $1 > $tmpf
+	# unsplit long lines
+	sed -zi 's/\\\n //g' $tmpf
+
+	# only keep Text tags and new Paragraphs as new line
+	sed -i '/^\(<P \|<T \)/!d' $tmpf
+
+	# Ignore this strange things
+	sed -i '/^<T "--Feld--">/d' $tmpf
+
+	# replace <P.*> with a newline
+	sed -i 's/^<P .*//g' $tmpf
+
+	# replace <T ""> with its content
+	# XXX: dirty hack. replace protected quotes with a € sign (didn't exist
+	# in Applix times...), so we can match the Text field easier
+	sed -i 's/\\"/€€€€/g' $tmpf
+	# anything until " will be the text field
+	sed -zri 's/<T "([^"]+)".*>\n/\1/mg' $tmpf
+#	sed -zri 's/<T "([[^"].*])".*>\n/\1/mg' $tmpf
+
+	# convert back
+	sed -i 's/€€€€/"/g' $tmpf
+
+	# replace encoded special characters
+	sed -i -e 's/\^nm/Ü/g' -e 's/\^pm/ü/g' -e 's/\^oe/ä/g' -e 's/\^me/Ä/g' -e 's/\^pg/ö/g' -e 's/\^ng/Ö/g' -e 's/\^np/ß/g' -e 's/\^aj/\t/g' -e 's/\^oj/é/g' -e 's/\^oi/è/g' -e 's/\^ok/ê/g' -e 's/\^oh/ç/g' -e 's/--Feld--/\xA0/g' -e 's/\\"/"/g' $tmpf
+
+	cat $tmpf
+
+	rm $tmpf
+else
+	echo "$1 is not a file"
+fi
+
+
