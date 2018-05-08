@@ -42,11 +42,11 @@ Prior to OLAP industry consolidation in 2007, Applix was the purest OLAP vendor 
 Products and technology
 
 Applix TM1 is enterprise planning software used for collaborative planning, budgeting and forecasting, as well as analytical and reporting applications. Data in TM1 is stored and represented as multidimensional cubes, with data being stored at the "leaf" level. Computations on the leaf data are performed in real-time (for example, to aggregate numbers up a dimensional hierarchy). IBM Cognos TM1 also includes a data orchestration environment for accessing external data and systems, as well as capabilities designed for common business planning and budgeting requirements (e.g. workflow, top-down adjustments).
-'''
+```
 
 ## Limitations
 
-- This script tries to extract text from Applix tags ```<T "Text content" >''' and replaces tags ```<P.* ''' with new lines.
+- This script tries to extract text from Applix tags ```<T "Text content" >``` and replaces tags ```<P.* ``` with new lines.
 - It also translates a few encoded extended characters (öäüßéèçê [...] to the UTF-8 equivalent).
 - Anything else is hopefully ignored. 
 - Complex documents might produce unexpected output.
